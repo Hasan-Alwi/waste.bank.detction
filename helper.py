@@ -1,5 +1,6 @@
 from ultralytics import YOLO
 import time
+import numpy as np
 import streamlit as st
 import cv2
 import settings
@@ -83,17 +84,20 @@ def _display_detected_frames(model, st_frame, image):
 
 
 def play_webcam(model):
-    source_webcam = settings.WEBCAM_PATH
-    if st.button('Detect Objects'):
+    st.title("Camera Input Object Detection")
+
+    # Input gambar dari kamera atau file
+    uploaded_image = st.camera_input("Take a picture")
+
+    if uploaded_image is not None:
         try:
-            vid_cap = cv2.VideoCapture(source_webcam)
+            # Baca gambar dari input sebagai array NumPy
+            file_bytes = np.asarray(bytearray(uploaded_image.read()), dtype=np.uint8)
+            image = cv2.imdecode(file_bytes, 1)
+
+            # Placeholder untuk menampilkan hasil
             st_frame = st.empty()
-            while (vid_cap.isOpened()):
-                success, image = vid_cap.read()
-                if success:
-                    _display_detected_frames(model,st_frame,image)
-                else:
-                    vid_cap.release()
-                    break
+            _display_detected_frames(model, st_frame, image)
+
         except Exception as e:
-            st.sidebar.error("Error loading video: " + str(e))
+            st.sidebar.error("Error processing image: " + str(e))
